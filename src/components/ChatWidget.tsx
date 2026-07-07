@@ -187,8 +187,12 @@ export function ChatWidget() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-jade-deep px-4 py-3 text-ivory">
             <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-ivory/10">
-                <Sparkles size={18} className="text-gold" />
+              <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-ivory/10">
+                <img
+                  src="/favicon.png"
+                alt="Anaya Spa concierge"
+                  className="h-6 w-6 object-contain"
+                />
               </div>
               <div>
                 <p className="font-serif text-base">Spa Concierge</p>
