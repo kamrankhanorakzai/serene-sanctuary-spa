@@ -1,30 +1,305 @@
-import { MessageCircle } from "lucide-react";
+"use client";
 
-/**
- * Floating chat widget button — placeholder.
- *
- * Placeholder onClick handler. This button will be wired up to an external
- * n8n RAG chatbot for FAQ support in a later integration step. Do not add
- * business logic here — replace the onClick body with the chatbot trigger
- * (e.g. open widget, POST to n8n webhook, etc.) when connecting.
- */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { TextStreamChatTransport, type UIMessage } from "ai";
+import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputSubmit,
+  PromptInputFooter,
+  type PromptInputMessage,
+} from "@/components/ai-elements/prompt-input";
+import { Shimmer } from "@/components/ai-elements/shimmer";
+
+const STORAGE_KEY = "anaya-spa-chat-messages";
+const CHAT_ID = "anaya-spa-concierge";
+
+// ---------------------------------------------------------------------------
+// Mock n8n transport — replace the fetch below with a real n8n webhook call
+// when the RAG chatbot integration is wired up.
+// ---------------------------------------------------------------------------
+const N8N_WEBHOOK_URL = "https://REPLACE-WITH-YOUR-N8N-WEBHOOK.lovable.app";
+
+function mockN8nFetch(
+  _input: string | URL | Request,
+  init?: RequestInit
+): Promise<Response> {
+  const body = init?.body ? JSON.parse(init.body as string) : { messages: [] };
+  const lastUserMessage =
+    body.messages
+      ?.slice()
+      .reverse()
+      .find((m: UIMessage) => m.role === "user") ?? null;
+
+  const userText = lastUserMessage?.parts
+    ?.filter((p: { type: string }) => p.type === "text")
+    .map((p: { text: string }) => p.text)
+    .join(" ") ?? "";
+
+  const greeting = userText
+    ? `Thank you for your question about "${userText.split(" ").slice(0, 6).join(" ")}${userText.split(" ").length > 6 ? "…" : ""}".`
+    : "Thank you for reaching out to Anaya Spa.";
+
+  const responseText = `${greeting} A member of our wellness concierge team will be with you shortly during business hours. In the meantime, explore our Services, Pricing, and FAQ pages for instant answers, or call us at (310) 555-0199.`;
+
+  const encoder = new TextEncoder();
+  const words = responseText.split(" ");
+
+  const stream = new ReadableStream({
+    start(controller) {
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < words.length) {
+          controller.enqueue(encoder.encode(words[i] + (i < words.length - 1 ? " " : "")));
+          i++;
+        } else {
+          clearInterval(interval);
+          controller.close();
+        }
+      }, 55);
+    },
+  });
+
+  return Promise.resolve(
+    new Response(stream, {
+      status: 200,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    })
+  );
+}
+
+function loadMessages(): UIMessage[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as UIMessage[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveMessages(messages: UIMessage[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  } catch {
+    // localStorage can be disabled in private mode; fail silently.
+  }
+}
+
 export function ChatWidget() {
-  const handleClick = () => {
-    // TODO: connect to n8n RAG chatbot webhook for FAQ support.
-  };
+  const [isOpen, setIsOpen] = useState(false);
+  const [initialMessages] = useState<UIMessage[]>(loadMessages);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const transport = useMemo(
+    () =>
+      new TextStreamChatTransport({
+        api: N8N_WEBHOOK_URL,
+        fetch: mockN8nFetch,
+      }),
+    []
+  );
+
+  const { messages, sendMessage, status, setMessages } = useChat({
+    id: CHAT_ID,
+    messages: initialMessages,
+    transport,
+    onFinish: ({ messages: finalMessages }) => {
+      saveMessages(finalMessages);
+    },
+    onError: (error) => {
+      console.error("Chat error:", error);
+    },
+  });
+
+  // Persist messages on every change (user messages, streaming updates, etc.).
+  useEffect(() => {
+    saveMessages(messages);
+  }, [messages]);
+
+  // Focus textarea whenever the panel opens and after a message is sent.
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => textareaRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, status, messages.length]);
+
+  const handleSubmit = useCallback(
+    (message: PromptInputMessage) => {
+      const text = message.text.trim();
+      if (!text || status === "submitted" || status === "streaming") return;
+      sendMessage({ text });
+    },
+    [sendMessage, status]
+  );
+
+  const handleClear = useCallback(() => {
+    setMessages([]);
+    saveMessages([]);
+  }, [setMessages]);
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-label="Ask us anything"
-      className="group fixed right-5 bottom-5 z-50 flex items-center gap-3 rounded-full bg-jade-deep px-5 py-4 text-ivory shadow-luxe transition-all duration-500 hover:bg-gold hover:text-jade-deep sm:right-8 sm:bottom-8"
-    >
-      <span className="grid h-6 w-6 place-items-center">
-        <MessageCircle size={20} />
-      </span>
-      <span className="text-[0.72rem] uppercase tracking-[0.22em]">Ask us anything</span>
-      <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-gold ring-2 ring-ivory shimmer" />
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        aria-label="Ask us anything"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className="group fixed right-5 bottom-5 z-50 flex items-center gap-3 rounded-full bg-jade-deep px-5 py-4 text-ivory shadow-luxe transition-all duration-500 hover:bg-gold hover:text-jade-deep sm:right-8 sm:bottom-8"
+      >
+        <span className="grid h-6 w-6 place-items-center">
+          <MessageCircle size={20} />
+        </span>
+        <span className="text-[0.72rem] uppercase tracking-[0.22em]">Ask us anything</span>
+        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-gold ring-2 ring-ivory shimmer" />
+      </button>
+
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-label="Anaya Spa Concierge Chat"
+          aria-modal="false"
+          className="fixed right-5 bottom-24 z-50 flex w-[calc(100vw-2.5rem)] max-w-[420px] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-luxe sm:right-8 sm:bottom-28"
+          style={{ height: "min(640px, calc(100vh - 8rem))" }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border bg-jade-deep px-4 py-3 text-ivory">
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-ivory/10">
+                <Sparkles size={18} className="text-gold" />
+              </div>
+              <div>
+                <p className="font-serif text-base">Spa Concierge</p>
+                <p className="text-[0.65rem] uppercase tracking-widest text-ivory/70">
+                  Ask us anything
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleClear}
+                className="rounded-full p-2 text-ivory/70 transition-colors hover:bg-ivory/10 hover:text-ivory"
+                title="New conversation"
+                aria-label="New conversation"
+              >
+                <span className="sr-only">New conversation</span>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-2 text-ivory/70 transition-colors hover:bg-ivory/10 hover:text-ivory"
+                aria-label="Close chat"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Conversation */}
+          <Conversation className="flex-1 bg-background">
+            <ConversationContent>
+              {messages.length === 0 ? (
+                <ConversationEmptyState
+                  icon={<Sparkles size={28} className="text-gold" />}
+                  title="Welcome to Anaya Spa"
+                  description="Ask about our massages, facials, packages, or booking hours. Our concierge is here to help."
+                />
+              ) : (
+                messages.map((message) => (
+                  <Message key={message.id} from={message.role}>
+                    <MessageContent>
+                      {message.parts.map((part, index) => {
+                        if (part.type === "text") {
+                          return <MessageResponse key={index}>{part.text}</MessageResponse>;
+                        }
+                        return null;
+                      })}
+                    </MessageContent>
+                  </Message>
+                ))
+              )}
+              {isLoading && (
+                <Message from="assistant">
+                  <MessageContent>
+                    <Shimmer className="text-sm text-muted-foreground">
+                      Concierge is typing…
+                    </Shimmer>
+                  </MessageContent>
+                </Message>
+              )}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
+
+          {/* Composer */}
+          <div className="border-t border-border bg-card p-4">
+            <PromptInput
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-2"
+            >
+              <PromptInputTextarea
+                ref={textareaRef}
+                placeholder="Type your question…"
+                rows={1}
+                className="min-h-[44px] resize-none rounded-xl border border-input bg-background px-3 py-3 text-sm focus-visible:ring-1 focus-visible:ring-ring"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
+              />
+              <PromptInputFooter className="justify-end">
+                <PromptInputSubmit
+                  status={status}
+                  disabled={isLoading}
+                  className="rounded-full bg-jade-deep text-ivory hover:bg-gold hover:text-jade-deep disabled:opacity-50"
+                >
+                  <Send size={16} />
+                </PromptInputSubmit>
+              </PromptInputFooter>
+            </PromptInput>
+            <p className="mt-2 text-center text-[0.65rem] text-muted-foreground">
+              Responses are simulated until connected to your n8n RAG assistant.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
