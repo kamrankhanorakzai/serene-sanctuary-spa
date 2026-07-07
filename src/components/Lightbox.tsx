@@ -40,14 +40,20 @@ export function Lightbox({ images, index, onClose, onIndexChange }: LightboxProp
         <X size={20} />
       </button>
       <button
-        onClick={(e) => { e.stopPropagation(); onIndexChange((index - 1 + images.length) % images.length); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onIndexChange((index - 1 + images.length) % images.length);
+        }}
         aria-label="Previous"
         className="absolute left-6 grid h-11 w-11 place-items-center rounded-full border border-ivory/20 text-ivory hover:border-gold hover:text-gold"
       >
         <ChevronLeft size={20} />
       </button>
       <button
-        onClick={(e) => { e.stopPropagation(); onIndexChange((index + 1) % images.length); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onIndexChange((index + 1) % images.length);
+        }}
         aria-label="Next"
         className="absolute right-6 grid h-11 w-11 place-items-center rounded-full border border-ivory/20 text-ivory hover:border-gold hover:text-gold"
       >

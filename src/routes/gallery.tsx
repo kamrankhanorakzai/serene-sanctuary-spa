@@ -7,9 +7,16 @@ export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
       { title: "Gallery — Anaya Spa" },
-      { name: "description", content: "Bamboo, orchids, candles, and stone. A visual walk through Anaya Spa's private pavilions and treatment suites." },
+      {
+        name: "description",
+        content:
+          "Bamboo, orchids, candles, and stone. A visual walk through Anaya Spa's private pavilions and treatment suites.",
+      },
       { property: "og:title", content: "Gallery — Anaya Spa" },
-      { property: "og:description", content: "Inside the sanctuary — a visual journey through Anaya Spa." },
+      {
+        property: "og:description",
+        content: "Inside the sanctuary — a visual journey through Anaya Spa.",
+      },
     ],
   }),
   component: Gallery,
@@ -25,8 +32,8 @@ function Gallery() {
           <div className="eyebrow">The Sanctuary</div>
           <h1 className="mt-4 font-serif text-5xl text-jade-deep md:text-7xl">Gallery</h1>
           <p className="mt-6 text-muted-foreground">
-            A visual walk through our private pavilions, treatment suites, and
-            the little details that make Anaya feel a world away.
+            A visual walk through our private pavilions, treatment suites, and the little details
+            that make Anaya feel a world away.
           </p>
         </div>
       </section>

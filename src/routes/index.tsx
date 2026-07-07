@@ -3,14 +3,7 @@ import hero from "@/assets/hero.jpg";
 import about from "@/assets/about.jpg";
 import { services, gallery } from "@/lib/spa-data";
 import { Testimonials } from "@/components/Testimonials";
-import {
-  ArrowRight,
-  Award,
-  Leaf,
-  Sparkles,
-  DoorClosed,
-  Mail,
-} from "lucide-react";
+import { ArrowRight, Award, Leaf, Sparkles, DoorClosed, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 export const Route = createFileRoute("/")({
@@ -18,10 +11,26 @@ export const Route = createFileRoute("/")({
 });
 
 const perks = [
-  { icon: Award, title: "Certified Therapists", body: "Every practitioner trained in Bali, Thailand, and by the CA Board." },
-  { icon: Leaf, title: "Organic Products", body: "House-blended botanicals — never sulfates, parabens, or synthetics." },
-  { icon: Sparkles, title: "Tranquil Ambiance", body: "Curated soundscape, dim candlelight, teak & stone throughout." },
-  { icon: DoorClosed, title: "Private Suites", body: "Each treatment room is a fully enclosed sanctuary — never a curtain." },
+  {
+    icon: Award,
+    title: "Certified Therapists",
+    body: "Every practitioner trained in Bali, Thailand, and by the CA Board.",
+  },
+  {
+    icon: Leaf,
+    title: "Organic Products",
+    body: "House-blended botanicals — never sulfates, parabens, or synthetics.",
+  },
+  {
+    icon: Sparkles,
+    title: "Tranquil Ambiance",
+    body: "Curated soundscape, dim candlelight, teak & stone throughout.",
+  },
+  {
+    icon: DoorClosed,
+    title: "Private Suites",
+    body: "Each treatment room is a fully enclosed sanctuary — never a curtain.",
+  },
 ];
 
 function Home() {
@@ -57,15 +66,34 @@ function Hero() {
           </span>
           <span className="gold-rule" />
         </div>
-        <h1 className="fade-up mt-8 font-serif text-5xl leading-[1.05] md:text-7xl lg:text-8xl" style={{ animationDelay: "0.15s" }}>
-          Where ancient ritual<br />meets modern stillness.
+        <h1
+          className="fade-up mt-8 font-serif text-5xl leading-[1.05] md:text-7xl lg:text-8xl"
+          style={{ animationDelay: "0.15s" }}
+        >
+          Where ancient ritual
+          <br />
+          meets modern stillness.
         </h1>
-        <p className="fade-up mt-8 max-w-xl text-base text-ivory/85 md:text-lg" style={{ animationDelay: "0.3s" }}>
-          A luxury wellness sanctuary channeling the resort spa traditions of Bali,
-          Thailand, and Java — reimagined for the modern American guest.
+        <p
+          className="fade-up mt-8 max-w-xl text-base text-ivory/85 md:text-lg"
+          style={{ animationDelay: "0.3s" }}
+        >
+          A luxury wellness sanctuary channeling the resort spa traditions of Bali, Thailand, and
+          Java — reimagined for the modern American guest.
         </p>
-        <div className="fade-up mt-10 flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "0.45s" }}>
-          <Link to="/book" className="btn-primary" style={{ background: "var(--color-gold)", borderColor: "var(--color-gold)", color: "var(--color-jade-deep)" }}>
+        <div
+          className="fade-up mt-10 flex flex-wrap items-center justify-center gap-4"
+          style={{ animationDelay: "0.45s" }}
+        >
+          <Link
+            to="/book"
+            className="btn-primary"
+            style={{
+              background: "var(--color-gold)",
+              borderColor: "var(--color-gold)",
+              color: "var(--color-jade-deep)",
+            }}
+          >
             Reserve Your Ritual <ArrowRight size={14} />
           </Link>
           <Link to="/services" className="btn-ghost">
@@ -103,19 +131,24 @@ function AboutPreview() {
         <div>
           <div className="eyebrow">Our Story</div>
           <h2 className="mt-4 font-serif text-4xl leading-tight text-jade-deep md:text-5xl">
-            A love letter to the healing<br />traditions of the East.
+            A love letter to the healing
+            <br />
+            traditions of the East.
           </h2>
           <p className="mt-6 text-base leading-relaxed text-muted-foreground">
-            Founded by Anaya Prasad after a decade studying in Ubud and Chiang Mai,
-            our spa is built on a single conviction: true wellness is not a service —
-            it is a ritual, a pause, an offering.
+            Founded by Anaya Prasad after a decade studying in Ubud and Chiang Mai, our spa is built
+            on a single conviction: true wellness is not a service — it is a ritual, a pause, an
+            offering.
           </p>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-            Every therapist is trained in the source lineage. Every oil is
-            hand-blended. Every suite is a private pavilion. What emerges is a
-            sanctuary that feels a world away, five minutes from the Pacific.
+            Every therapist is trained in the source lineage. Every oil is hand-blended. Every suite
+            is a private pavilion. What emerges is a sanctuary that feels a world away, five minutes
+            from the Pacific.
           </p>
-          <Link to="/about" className="mt-10 inline-flex items-center gap-3 text-sm uppercase tracking-[0.22em] text-jade-deep transition hover:text-gold">
+          <Link
+            to="/about"
+            className="mt-10 inline-flex items-center gap-3 text-sm uppercase tracking-[0.22em] text-jade-deep transition hover:text-gold"
+          >
             Read our story <ArrowRight size={14} />
           </Link>
         </div>
@@ -134,8 +167,8 @@ function ServicesGrid() {
             Treatments crafted like heirlooms.
           </h2>
           <p className="mt-5 text-muted-foreground">
-            Six defining rituals, each rooted in a specific tradition and
-            perfected over years of practice.
+            Six defining rituals, each rooted in a specific tradition and perfected over years of
+            practice.
           </p>
         </div>
 
@@ -198,7 +231,9 @@ function GalleryStrip() {
           <div>
             <div className="eyebrow">Inside the Sanctuary</div>
             <h2 className="mt-4 font-serif text-4xl text-ivory md:text-5xl">
-              Bamboo, orchid,<br />candle, and stone.
+              Bamboo, orchid,
+              <br />
+              candle, and stone.
             </h2>
           </div>
           <Link
@@ -276,16 +311,21 @@ function Newsletter() {
           Seasonal rituals, delivered gently.
         </h2>
         <p className="mt-5 text-muted-foreground">
-          One thoughtful email a month — new treatments, member offers, and
-          reflections from our practice. Never noise.
+          One thoughtful email a month — new treatments, member offers, and reflections from our
+          practice. Never noise.
         </p>
 
         {done ? (
-          <p className="mt-10 font-serif text-2xl text-gold">Thank you — welcome to the sanctuary.</p>
+          <p className="mt-10 font-serif text-2xl text-gold">
+            Thank you — welcome to the sanctuary.
+          </p>
         ) : (
           <form onSubmit={onSubmit} className="mx-auto mt-10 flex max-w-md gap-2">
             <div className="relative flex-1">
-              <Mail className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground" size={16} />
+              <Mail
+                className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
               <input
                 type="email"
                 name="email"
@@ -294,7 +334,9 @@ function Newsletter() {
                 className="w-full rounded-full border border-input bg-card py-3 pr-4 pl-11 text-sm focus:border-gold focus:outline-none"
               />
             </div>
-            <button type="submit" className="btn-primary">Subscribe</button>
+            <button type="submit" className="btn-primary">
+              Subscribe
+            </button>
           </form>
         )}
       </div>

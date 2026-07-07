@@ -24,7 +24,9 @@ function NotFoundComponent() {
           The page you're looking for has drifted away like incense smoke.
         </p>
         <div className="mt-8">
-          <a href="/" className="btn-primary">Return home</a>
+          <a href="/" className="btn-primary">
+            Return home
+          </a>
         </div>
       </div>
     </div>
@@ -46,10 +48,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           A moment of stillness — please try again.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <button onClick={() => { router.invalidate(); reset(); }} className="btn-primary">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="btn-primary"
+          >
             Try again
           </button>
-          <a href="/" className="btn-primary" style={{ background: "transparent", color: "var(--color-jade-deep)" }}>
+          <a
+            href="/"
+            className="btn-primary"
+            style={{ background: "transparent", color: "var(--color-jade-deep)" }}
+          >
             Go home
           </a>
         </div>

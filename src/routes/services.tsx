@@ -6,9 +6,16 @@ export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
       { title: "Services & Treatments — Anaya Spa" },
-      { name: "description", content: "Signature spa rituals: Thai and Balinese massage, botanical facials, hot stone therapy, body scrubs, and private couples suites in Santa Monica." },
+      {
+        name: "description",
+        content:
+          "Signature spa rituals: Thai and Balinese massage, botanical facials, hot stone therapy, body scrubs, and private couples suites in Santa Monica.",
+      },
       { property: "og:title", content: "Signature Rituals — Anaya Spa" },
-      { property: "og:description", content: "Six defining spa treatments rooted in the lineage of Southeast Asian wellness." },
+      {
+        property: "og:description",
+        content: "Six defining spa treatments rooted in the lineage of Southeast Asian wellness.",
+      },
     ],
   }),
   component: Services,
@@ -24,9 +31,8 @@ function Services() {
             Six rituals. One sanctuary.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-muted-foreground">
-            Each treatment is delivered in a fully private suite, begins with a
-            welcome tea ceremony, and closes with a quiet moment in the
-            relaxation lounge.
+            Each treatment is delivered in a fully private suite, begins with a welcome tea
+            ceremony, and closes with a quiet moment in the relaxation lounge.
           </p>
         </div>
       </section>
@@ -43,7 +49,12 @@ function Services() {
                 }`}
               >
                 <div className="overflow-hidden rounded-2xl shadow-luxe">
-                  <img src={s.image} alt={s.name} loading="lazy" className="h-full w-full object-cover" />
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div>
                   <div className="eyebrow">Ritual · {String(i + 1).padStart(2, "0")}</div>
@@ -57,7 +68,9 @@ function Services() {
                       <span className="text-muted-foreground">{s.duration}</span>
                     </div>
                     <div className="text-lg font-serif text-jade-deep">{s.price}</div>
-                    <Link to="/book" className="btn-primary ml-auto">Book</Link>
+                    <Link to="/book" className="btn-primary ml-auto">
+                      Book
+                    </Link>
                   </div>
                 </div>
               </article>

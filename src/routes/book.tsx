@@ -6,7 +6,11 @@ export const Route = createFileRoute("/book")({
   head: () => ({
     meta: [
       { title: "Book Your Ritual — Anaya Spa" },
-      { name: "description", content: "Reserve your spa treatment at Anaya Spa in Santa Monica. Request an appointment and our concierge will confirm within 2 hours." },
+      {
+        name: "description",
+        content:
+          "Reserve your spa treatment at Anaya Spa in Santa Monica. Request an appointment and our concierge will confirm within 2 hours.",
+      },
       { property: "og:title", content: "Book Your Ritual — Anaya Spa" },
       { property: "og:description", content: "Request your appointment at Anaya Spa." },
     ],
@@ -18,7 +22,11 @@ function Book() {
   return (
     <>
       <section className="relative flex min-h-[42svh] items-center justify-center overflow-hidden pt-32 pb-14">
-        <img src={couples} alt="Private spa pavilion" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={couples}
+          alt="Private spa pavilion"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-jade-deep/75" />
         <div className="relative z-10 px-6 text-center text-ivory fade-up">
           <div className="eyebrow">Reservations</div>

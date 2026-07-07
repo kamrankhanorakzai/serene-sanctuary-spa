@@ -12,11 +12,7 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
-import {
-  Message,
-  MessageContent,
-  MessageResponse,
-} from "@/components/ai-elements/message";
+import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import {
   PromptInput,
   PromptInputTextarea,
@@ -35,10 +31,7 @@ const CHAT_ID = "anaya-spa-concierge";
 // ---------------------------------------------------------------------------
 const N8N_WEBHOOK_URL = "https://REPLACE-WITH-YOUR-N8N-WEBHOOK.lovable.app";
 
-function mockN8nFetch(
-  _input: string | URL | Request,
-  init?: RequestInit
-): Promise<Response> {
+function mockN8nFetch(_input: string | URL | Request, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(init.body as string) : { messages: [] };
   const lastUserMessage =
     body.messages
@@ -46,10 +39,11 @@ function mockN8nFetch(
       .reverse()
       .find((m: UIMessage) => m.role === "user") ?? null;
 
-  const userText = lastUserMessage?.parts
-    ?.filter((p: { type: string }) => p.type === "text")
-    .map((p: { text: string }) => p.text)
-    .join(" ") ?? "";
+  const userText =
+    lastUserMessage?.parts
+      ?.filter((p: { type: string }) => p.type === "text")
+      .map((p: { text: string }) => p.text)
+      .join(" ") ?? "";
 
   const greeting = userText
     ? `Thank you for your question about "${userText.split(" ").slice(0, 6).join(" ")}${userText.split(" ").length > 6 ? "…" : ""}".`
@@ -79,7 +73,7 @@ function mockN8nFetch(
     new Response(stream, {
       status: 200,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
-    })
+    }),
   );
 }
 
@@ -115,7 +109,7 @@ export function ChatWidget() {
         api: N8N_WEBHOOK_URL,
         fetch: mockN8nFetch,
       }),
-    []
+    [],
   );
 
   const { messages, sendMessage, status, setMessages } = useChat({
@@ -149,7 +143,7 @@ export function ChatWidget() {
       if (!text || status === "submitted" || status === "streaming") return;
       sendMessage({ text });
     },
-    [sendMessage, status]
+    [sendMessage, status],
   );
 
   const handleClear = useCallback(() => {
@@ -190,7 +184,7 @@ export function ChatWidget() {
               <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-ivory/10">
                 <img
                   src="/favicon.png"
-                alt="Anaya Spa concierge"
+                  alt="Anaya Spa concierge"
                   className="h-6 w-6 object-contain"
                 />
               </div>
@@ -278,10 +272,7 @@ export function ChatWidget() {
 
           {/* Composer */}
           <div className="border-t border-border bg-card p-4">
-            <PromptInput
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-2"
-            >
+            <PromptInput onSubmit={handleSubmit} className="flex flex-col gap-2">
               <PromptInputTextarea
                 ref={textareaRef}
                 placeholder="Type your question…"

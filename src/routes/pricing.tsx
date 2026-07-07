@@ -6,7 +6,11 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Packages & Pricing — Anaya Spa" },
-      { name: "description", content: "Half-day retreats, full-day sanctuaries, and couples escapes. Transparent pricing for every Anaya Spa ritual and curated package." },
+      {
+        name: "description",
+        content:
+          "Half-day retreats, full-day sanctuaries, and couples escapes. Transparent pricing for every Anaya Spa ritual and curated package.",
+      },
       { property: "og:title", content: "Packages & Pricing — Anaya Spa" },
       { property: "og:description", content: "Curated spa packages and à la carte pricing." },
     ],
@@ -20,12 +24,10 @@ function Pricing() {
       <section className="bg-background pt-40 pb-14 md:pt-48 md:pb-20">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <div className="eyebrow">Packages</div>
-          <h1 className="mt-4 font-serif text-5xl text-jade-deep md:text-7xl">
-            Curated retreats.
-          </h1>
+          <h1 className="mt-4 font-serif text-5xl text-jade-deep md:text-7xl">Curated retreats.</h1>
           <p className="mt-6 text-muted-foreground">
-            Full-day sanctuaries and half-day retreats — a considered
-            sequence of rituals, refreshment, and quiet.
+            Full-day sanctuaries and half-day retreats — a considered sequence of rituals,
+            refreshment, and quiet.
           </p>
         </div>
       </section>
@@ -47,19 +49,30 @@ function Pricing() {
                     Most loved
                   </div>
                 )}
-                <h3 className={`font-serif text-3xl ${p.featured ? "text-ivory" : "text-jade-deep"}`}>
+                <h3
+                  className={`font-serif text-3xl ${p.featured ? "text-ivory" : "text-jade-deep"}`}
+                >
                   {p.name}
                 </h3>
-                <div className={`mt-1 text-xs uppercase tracking-[0.22em] ${p.featured ? "text-gold" : "text-muted-foreground"}`}>
+                <div
+                  className={`mt-1 text-xs uppercase tracking-[0.22em] ${p.featured ? "text-gold" : "text-muted-foreground"}`}
+                >
                   {p.duration}
                 </div>
-                <div className={`mt-8 font-serif text-6xl ${p.featured ? "text-gold" : "text-jade-deep"}`}>
+                <div
+                  className={`mt-8 font-serif text-6xl ${p.featured ? "text-gold" : "text-jade-deep"}`}
+                >
                   {p.price}
                 </div>
-                <ul className={`mt-8 space-y-3 text-sm ${p.featured ? "text-ivory/85" : "text-muted-foreground"}`}>
+                <ul
+                  className={`mt-8 space-y-3 text-sm ${p.featured ? "text-ivory/85" : "text-muted-foreground"}`}
+                >
                   {p.inclusions.map((line) => (
                     <li key={line} className="flex items-start gap-3">
-                      <Check size={16} className={`mt-0.5 shrink-0 ${p.featured ? "text-gold" : "text-jade-deep"}`} />
+                      <Check
+                        size={16}
+                        className={`mt-0.5 shrink-0 ${p.featured ? "text-gold" : "text-jade-deep"}`}
+                      />
                       <span>{line}</span>
                     </li>
                   ))}
@@ -67,7 +80,15 @@ function Pricing() {
                 <Link
                   to="/book"
                   className={`btn-primary mt-10 ${p.featured ? "" : ""}`}
-                  style={p.featured ? { background: "var(--color-gold)", borderColor: "var(--color-gold)", color: "var(--color-jade-deep)" } : undefined}
+                  style={
+                    p.featured
+                      ? {
+                          background: "var(--color-gold)",
+                          borderColor: "var(--color-gold)",
+                          color: "var(--color-jade-deep)",
+                        }
+                      : undefined
+                  }
                 >
                   Reserve
                 </Link>
@@ -84,7 +105,10 @@ function Pricing() {
             </div>
             <div className="mx-auto mt-12 max-w-3xl divide-y divide-border rounded-2xl border border-border bg-card">
               {services.map((s) => (
-                <div key={s.slug} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 p-6 md:p-8">
+                <div
+                  key={s.slug}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 p-6 md:p-8"
+                >
                   <div className="min-w-0">
                     <div className="font-serif text-xl text-jade-deep">{s.name}</div>
                     <div className="mt-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">

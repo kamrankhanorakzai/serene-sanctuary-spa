@@ -21,8 +21,8 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         </div>
         <h3 className="font-serif text-2xl text-jade-deep">Your request is received</h3>
         <p className="max-w-sm text-sm text-muted-foreground">
-          A member of our concierge team will confirm your appointment within 2 hours.
-          Please check your inbox for a gentle confirmation.
+          A member of our concierge team will confirm your appointment within 2 hours. Please check
+          your inbox for a gentle confirmation.
         </p>
       </div>
     );
@@ -43,9 +43,13 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
           defaultValue=""
           className="w-full rounded-md border border-input bg-transparent px-4 py-3 text-sm focus:border-gold focus:outline-none"
         >
-          <option value="" disabled>Select a treatment</option>
+          <option value="" disabled>
+            Select a treatment
+          </option>
           {services.map((s) => (
-            <option key={s.slug} value={s.name}>{s.name}</option>
+            <option key={s.slug} value={s.name}>
+              {s.name}
+            </option>
           ))}
           <option value="Not sure">Not sure — recommend for me</option>
         </select>
@@ -65,7 +69,9 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className={compact ? "" : "md:col-span-2"}>
-        <button type="submit" className="btn-primary w-full">Request Appointment</button>
+        <button type="submit" className="btn-primary w-full">
+          Request Appointment
+        </button>
         <p className="mt-3 text-center text-xs text-muted-foreground">
           This is a request — you will receive a confirmation call within 2 hours.
         </p>
