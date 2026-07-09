@@ -5,19 +5,27 @@ import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import type { ComponentProps } from "react";
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect, createContext, useContext } from "react";
+
+const ConversationContext = createContext<React.RefObject<HTMLDivElement | null> | null>(null);
 
 export type ConversationProps = ComponentProps<"div">;
 
-export const Conversation = ({ className, children, ...props }: ConversationProps) => (
-  <div
-    className={cn("relative flex-1 overflow-y-auto", className)}
-    role="log"
-    {...props}
-  >
-    {children}
-  </div>
-);
+export const Conversation = ({ className, children, ...props }: ConversationProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  return (
+    <ConversationContext.Provider value={containerRef}>
+      <div
+        ref={containerRef}
+        className={cn("relative flex-1 overflow-y-auto", className)}
+        role="log"
+        {...props}
+      >
+        {children}
+      </div>
+    </ConversationContext.Provider>
+  );
+};
 
 export type ConversationContentProps = ComponentProps<"div">;
 
@@ -64,28 +72,45 @@ export const ConversationScrollButton = ({
   className,
   ...props
 }: ConversationScrollButtonProps) => {
-  const { isAtBottom, scrollToBottom } = useStickToBottomContext();
+  const containerRef = useContext(ConversationContext);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  useEffect(() => {
+    const container = containerRef?.current;
+    if (!container) return;
+
+    const updatePosition = () => {
+      const threshold = 40;
+      setIsAtBottom(
+        container.scrollHeight - container.scrollTop - container.clientHeight <= threshold,
+      );
+    };
+
+    updatePosition();
+    container.addEventListener("scroll", updatePosition, { passive: true });
+    return () => container.removeEventListener("scroll", updatePosition);
+  }, [containerRef]);
 
   const handleScrollToBottom = useCallback(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
+    containerRef?.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
+  }, [containerRef]);
+
+  if (isAtBottom) return null;
 
   return (
-    !isAtBottom && (
-      <Button
-        className={cn(
-          "absolute bottom-4 left-[50%] translate-x-[-50%] rounded-full dark:bg-background dark:hover:bg-muted",
-          className,
-        )}
-        onClick={handleScrollToBottom}
-        size="icon"
-        type="button"
-        variant="outline"
-        {...props}
-      >
-        <ArrowDownIcon className="size-4" />
-      </Button>
-    )
+    <Button
+      className={cn(
+        "absolute bottom-4 left-[50%] translate-x-[-50%] rounded-full dark:bg-background dark:hover:bg-muted",
+        className,
+      )}
+      onClick={handleScrollToBottom}
+      size="icon"
+      type="button"
+      variant="outline"
+      {...props}
+    >
+      <ArrowDownIcon className="size-4" />
+    </Button>
   );
 };
 
