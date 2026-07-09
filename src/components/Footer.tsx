@@ -129,6 +129,10 @@ export function Footer() {
             </a>
           </div>
         </div>
+
+        <div className="mt-6 text-center text-[0.65rem] tracking-wider text-ivory/30">
+          Created by <span className="text-gold/70">aiconsultix</span>
+        </div>
       </div>
     </footer>
   );
