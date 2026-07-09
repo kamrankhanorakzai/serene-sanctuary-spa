@@ -26,55 +26,126 @@ const STORAGE_KEY = "anaya-spa-chat-messages";
 const CHAT_ID = "anaya-spa-concierge";
 
 // ---------------------------------------------------------------------------
-// Mock n8n transport — replace the fetch below with a real n8n webhook call
-// when the RAG chatbot integration is wired up.
+// n8n webhook integration — live chat routed through the Anaya Spa n8n agent.
+// The webhook is expected to accept { chatInput, sessionId, history } and
+// return plain text or JSON such as { output } / { text } / { message }.
 // ---------------------------------------------------------------------------
-const N8N_WEBHOOK_URL = "https://REPLACE-WITH-YOUR-N8N-WEBHOOK.lovable.app";
+const N8N_WEBHOOK_URL = "https://n8n-postgres.aiconsultix.com/webhook/spa-chat";
+const BUSY_MESSAGE =
+  "Our system is a little busy right now — we'll get back to you in a moment. In the meantime, feel free to call us at (310) 555-0199 or browse our Services and Pricing pages.";
 
-function mockN8nFetch(_input: string | URL | Request, init?: RequestInit): Promise<Response> {
-  const body = init?.body ? JSON.parse(init.body as string) : { messages: [] };
-  const lastUserMessage =
-    body.messages
-      ?.slice()
-      .reverse()
-      .find((m: UIMessage) => m.role === "user") ?? null;
+function getSessionId(): string {
+  if (typeof window === "undefined") return "server";
+  const key = "anaya-spa-chat-session-id";
+  let id = window.localStorage.getItem(key);
+  if (!id) {
+    id =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(key, id);
+  }
+  return id;
+}
 
-  const userText =
-    lastUserMessage?.parts
-      ?.filter((p: { type: string }) => p.type === "text")
-      .map((p: { text: string }) => p.text)
-      .join(" ") ?? "";
+function extractText(payload: unknown): string {
+  if (payload == null) return "";
+  if (typeof payload === "string") return payload;
+  if (Array.isArray(payload)) return payload.map(extractText).filter(Boolean).join("\n\n");
+  if (typeof payload === "object") {
+    const obj = payload as Record<string, unknown>;
+    for (const key of ["output", "text", "message", "response", "reply", "answer", "content"]) {
+      const v = obj[key];
+      if (typeof v === "string" && v.trim()) return v;
+      if (v && typeof v === "object") {
+        const nested = extractText(v);
+        if (nested) return nested;
+      }
+    }
+  }
+  return "";
+}
 
-  const greeting = userText
-    ? `Thank you for your question about "${userText.split(" ").slice(0, 6).join(" ")}${userText.split(" ").length > 6 ? "…" : ""}".`
-    : "Thank you for reaching out to Anaya Spa.";
-
-  const responseText = `${greeting} A member of our wellness concierge team will be with you shortly during business hours. In the meantime, explore our Services, Pricing, and FAQ pages for instant answers, or call us at (310) 555-0199.`;
-
+function textToStream(text: string, chunkWords = 3, delay = 35): Response {
   const encoder = new TextEncoder();
-  const words = responseText.split(" ");
-
+  const words = text.split(/(\s+)/);
   const stream = new ReadableStream({
     start(controller) {
       let i = 0;
-      const interval = setInterval(() => {
-        if (i < words.length) {
-          controller.enqueue(encoder.encode(words[i] + (i < words.length - 1 ? " " : "")));
-          i++;
-        } else {
-          clearInterval(interval);
+      const tick = () => {
+        if (i >= words.length) {
           controller.close();
+          return;
         }
-      }, 55);
+        controller.enqueue(encoder.encode(words.slice(i, i + chunkWords).join("")));
+        i += chunkWords;
+        setTimeout(tick, delay);
+      };
+      tick();
     },
   });
+  return new Response(stream, {
+    status: 200,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
 
-  return Promise.resolve(
-    new Response(stream, {
-      status: 200,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    }),
-  );
+async function n8nFetch(_input: string | URL | Request, init?: RequestInit): Promise<Response> {
+  try {
+    const body = init?.body ? JSON.parse(init.body as string) : { messages: [] };
+    const messages: UIMessage[] = Array.isArray(body.messages) ? body.messages : [];
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    const chatInput =
+      lastUser?.parts
+        ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
+        .map((p) => p.text)
+        .join(" ")
+        .trim() ?? "";
+
+    const history = messages.slice(-20).map((m) => ({
+      role: m.role,
+      content:
+        m.parts
+          ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
+          .map((p) => p.text)
+          .join(" ") ?? "",
+    }));
+
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chatInput,
+        message: chatInput,
+        sessionId: getSessionId(),
+        history,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("n8n webhook error:", res.status);
+      return textToStream(BUSY_MESSAGE);
+    }
+
+    const contentType = res.headers.get("content-type") ?? "";
+    let text = "";
+    if (contentType.includes("application/json")) {
+      text = extractText(await res.json());
+    } else {
+      const raw = await res.text();
+      try {
+        text = extractText(JSON.parse(raw)) || raw;
+      } catch {
+        text = raw;
+      }
+    }
+
+    if (!text.trim()) text = BUSY_MESSAGE;
+    return textToStream(text);
+  } catch (err) {
+    console.error("n8n webhook exception:", err);
+    return textToStream(BUSY_MESSAGE);
+  }
 }
 
 function loadMessages(): UIMessage[] {
@@ -107,7 +178,7 @@ export function ChatWidget() {
     () =>
       new TextStreamChatTransport({
         api: N8N_WEBHOOK_URL,
-        fetch: mockN8nFetch,
+        fetch: n8nFetch,
       }),
     [],
   );
