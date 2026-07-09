@@ -22,7 +22,6 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 
-const STORAGE_KEY = "anaya-spa-chat-messages";
 const CHAT_ID = "anaya-spa-concierge";
 
 // ---------------------------------------------------------------------------
@@ -34,18 +33,11 @@ const N8N_WEBHOOK_URL = "https://n8n-postgres.aiconsultix.com/webhook/spa-chat";
 const BUSY_MESSAGE =
   "Our system is a little busy right now — we'll get back to you in a moment. In the meantime, feel free to call us at (310) 555-0199 or browse our Services and Pricing pages.";
 
-function getSessionId(): string {
-  if (typeof window === "undefined") return "server";
-  const key = "anaya-spa-chat-session-id";
-  let id = window.localStorage.getItem(key);
-  if (!id) {
-    id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    window.localStorage.setItem(key, id);
+function createSessionId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
   }
-  return id;
+  return `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 
 function extractText(payload: unknown): string {
