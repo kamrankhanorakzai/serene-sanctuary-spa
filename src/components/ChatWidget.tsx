@@ -97,8 +97,8 @@ async function n8nFetch(_input: string | URL | Request, init?: RequestInit): Pro
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
     const chatInput =
       lastUser?.parts
-        ?.filter((p: { type: string }) => p.type === "text")
-        .map((p: { text: string }) => p.text)
+        ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
+        .map((p) => p.text)
         .join(" ")
         .trim() ?? "";
 
@@ -106,8 +106,8 @@ async function n8nFetch(_input: string | URL | Request, init?: RequestInit): Pro
       role: m.role,
       content:
         m.parts
-          ?.filter((p: { type: string }) => p.type === "text")
-          .map((p: { text: string }) => p.text)
+          ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
+          .map((p) => p.text)
           .join(" ") ?? "",
     }));
 
