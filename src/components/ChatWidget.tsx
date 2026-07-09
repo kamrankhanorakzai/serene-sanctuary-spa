@@ -82,62 +82,67 @@ function textToStream(text: string, chunkWords = 3, delay = 35): Response {
   });
 }
 
-async function n8nFetch(_input: string | URL | Request, init?: RequestInit): Promise<Response> {
-  try {
-    const body = init?.body ? JSON.parse(init.body as string) : { messages: [] };
-    const messages: UIMessage[] = Array.isArray(body.messages) ? body.messages : [];
-    const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    const chatInput =
-      lastUser?.parts
-        ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
-        .map((p) => p.text)
-        .join(" ")
-        .trim() ?? "";
-
-    const history = messages.slice(-20).map((m) => ({
-      role: m.role,
-      content:
-        m.parts
+function createN8nFetch(sessionId: string) {
+  return async function n8nFetch(
+    _input: string | URL | Request,
+    init?: RequestInit,
+  ): Promise<Response> {
+    try {
+      const body = init?.body ? JSON.parse(init.body as string) : { messages: [] };
+      const messages: UIMessage[] = Array.isArray(body.messages) ? body.messages : [];
+      const lastUser = [...messages].reverse().find((m) => m.role === "user");
+      const chatInput =
+        lastUser?.parts
           ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
           .map((p) => p.text)
-          .join(" ") ?? "",
-    }));
+          .join(" ")
+          .trim() ?? "";
 
-    const res = await fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chatInput,
-        message: chatInput,
-        sessionId: getSessionId(),
-        history,
-      }),
-    });
+      const history = messages.slice(-20).map((m) => ({
+        role: m.role,
+        content:
+          m.parts
+            ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
+            .map((p) => p.text)
+            .join(" ") ?? "",
+      }));
 
-    if (!res.ok) {
-      console.error("n8n webhook error:", res.status);
+      const res = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatInput,
+          message: chatInput,
+          sessionId,
+          history,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("n8n webhook error:", res.status);
+        return textToStream(BUSY_MESSAGE);
+      }
+
+      const contentType = res.headers.get("content-type") ?? "";
+      let text = "";
+      if (contentType.includes("application/json")) {
+        text = extractText(await res.json());
+      } else {
+        const raw = await res.text();
+        try {
+          text = extractText(JSON.parse(raw)) || raw;
+        } catch {
+          text = raw;
+        }
+      }
+
+      if (!text.trim()) text = BUSY_MESSAGE;
+      return textToStream(text);
+    } catch (err) {
+      console.error("n8n webhook exception:", err);
       return textToStream(BUSY_MESSAGE);
     }
-
-    const contentType = res.headers.get("content-type") ?? "";
-    let text = "";
-    if (contentType.includes("application/json")) {
-      text = extractText(await res.json());
-    } else {
-      const raw = await res.text();
-      try {
-        text = extractText(JSON.parse(raw)) || raw;
-      } catch {
-        text = raw;
-      }
-    }
-
-    if (!text.trim()) text = BUSY_MESSAGE;
-    return textToStream(text);
-  } catch (err) {
-    console.error("n8n webhook exception:", err);
-    return textToStream(BUSY_MESSAGE);
-  }
+  };
 }
 
 function loadMessages(): UIMessage[] {
