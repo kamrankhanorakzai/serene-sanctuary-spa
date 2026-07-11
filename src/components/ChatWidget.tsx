@@ -145,7 +145,6 @@ function createN8nFetch(sessionId: string) {
   };
 }
 
-
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId] = useState<string>(() => createSessionId());
@@ -199,7 +198,7 @@ export function ChatWidget() {
         aria-label="Ask us anything"
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        className="group fixed right-5 bottom-5 z-50 flex items-center gap-3 rounded-full bg-jade-deep px-5 py-4 text-ivory shadow-luxe transition-all duration-500 hover:bg-gold hover:text-jade-deep sm:right-8 sm:bottom-8"
+        className="group fixed right-5 bottom-5 z-50 flex items-center gap-3 rounded-full bg-jade-deep px-5 py-4 text-ivory shadow-luxe transition-all duration-500 hover:bg-gold hover:text-jade-deep"
       >
         <span className="grid h-6 w-6 place-items-center">
           <MessageCircle size={20} />
@@ -333,9 +332,6 @@ export function ChatWidget() {
                 </PromptInputSubmit>
               </PromptInputFooter>
             </PromptInput>
-            <p className="mt-2 text-center text-[0.65rem] text-muted-foreground">
-              Responses are simulated until connected to your n8n RAG assistant.
-            </p>
           </div>
         </div>
       )}
